@@ -70,7 +70,8 @@ resource "aws_subnet" "public_subnet" {    # Creating Public Subnets
 # Creating Private Subnets
 resource "aws_subnet" "private_subnet_1" {
   vpc_id =  aws_vpc.main.id
-  cidr_block = var.private_subnet_cidr_1          # CIDR block of private subnets
+  cidr_block = var.private_subnet_cidr_1 # CIDR block of private subnets
+  availability_zone = var.availability_zone_1
 
   tags = {
     Name = "ecs_tf_qa_private_subnet_1"
@@ -81,6 +82,7 @@ resource "aws_subnet" "private_subnet_1" {
 resource "aws_subnet" "private_subnet_2" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.private_subnet_cidr_2
+  availability_zone = var.availability_zone_2
 
   tags = {
     Name = "ecs_tf_qa_private_subnet_2"
@@ -92,7 +94,7 @@ resource "aws_route_table" "public_rt" {
   # Creating RT for Public Subnet
   vpc_id = aws_vpc.main.id
   route {
-    cidr_block = var.public_subnet_cidr               # Traffic from Public Subnet reaches Internet via Internet Gateway
+    cidr_block = "0.0.0.0/0"               # Traffic from Public Subnet reaches Internet via Internet Gateway
     gateway_id = aws_internet_gateway.igw.id
   }
 
@@ -186,7 +188,7 @@ resource "aws_instance" "ec2_private_1" {
   ami                         = var.ec2_ami
   associate_public_ip_address = false
   instance_type               = "t2.micro"
-  subnet_id                   = var.private_subnet_cidr_1
+  subnet_id                   = aws_subnet.private_subnet_1.id
   vpc_security_group_ids      = [aws_security_group.allow_web_ssh_private.id]
 
   tags = {
@@ -200,7 +202,7 @@ resource "aws_instance" "ec2_private_2" {
   ami                         = var.ec2_ami
   associate_public_ip_address = false
   instance_type               = "t2.micro"
-  subnet_id                   = var.private_subnet_cidr_2
+  subnet_id                   = aws_subnet.private_subnet_2.id #subnet ID not CIDR Block
   vpc_security_group_ids      = [aws_security_group.allow_web_ssh_private.id]
 
   tags = {
